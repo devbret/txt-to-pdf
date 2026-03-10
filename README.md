@@ -1,7 +1,9 @@
-# Txt-To-PDF
+# TXT-To-PDF
 
-Txt-To-PDF converts all `.txt` files within an input directory into corresponding `.pdf` files in an output directory using the ReportLab library. It ensures the output folder exists, reads each text file line by line and writes the text onto a letter-sized PDF canvas with consistent margins and line spacing.
+A Python utility which converts all `.txt` files in an input directory into corresponding `.pdf` files in an output directory using the `ReportLab` library.
 
-When vertical space runs out on a page, this Python script automatically adds a new one and continues writing. Each conversion is logged to the console and once all files are processed, it prints a final confirmation message indicating completion.
+## Overview
 
-The script also uses Python’s built-in `logging` module to record each stage of the conversion process, including directory creation, file reading and PDF generation. All actions and errors are logged both to the console and a `conversion.log` file.
+The script reads each text file line by line and renders the content onto a letter-sized PDF canvas with consistent margins and spacing. As text is written to the page, the script automatically creates new pages when the vertical space runs out, ensuring the entire document is preserved in the resulting PDF.
+
+The program also includes structured `logging` using Python’s built-in logging module. It records each stage of the process while capturing any errors which occur. All events are logged both to the console and to a `conversion.log` file, allowing users to monitor progress and troubleshoot issues during the conversion process.
