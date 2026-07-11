@@ -1,14 +1,14 @@
 # TXT-To-PDF
 
-A Python utility which converts all `.txt` files in an input directory into corresponding `.pdf` files in an output directory using the `ReportLab` library.
+Python utility which converts all `.txt` files in an input directory into corresponding `.pdf` files in an output directory using the `ReportLab` library.
 
-## Overview
+## Application Overview
 
 The script reads each text file line by line and renders the content onto a letter-sized PDF canvas with consistent margins and spacing. As text is written to the page, the script automatically creates new pages when the vertical space runs out, ensuring the entire document is preserved in the resulting PDF.
 
 The program also includes structured `logging` using Python’s built-in logging module. It records each stage of the process while capturing any errors which occur. All events are logged both to the console and to a `conversion.log` file, allowing users to monitor progress and troubleshoot issues during the conversion process.
 
-## Set Up
+## Basic Setup Instructions
 
 Below are instructions for installing and running this application on a Linux machine.
 
@@ -32,11 +32,11 @@ Below are instructions for installing and running this application on a Linux ma
 
 6. Activate your virtual environment: `source venv/bin/activate`
 
-7. Install the needed dependencies for running the script: `pip install -r requirements.txt`
+7. Install the needed dependencies: `pip install -r requirements.txt`
 
 8. Place your `.txt` files into the `input` directory of this repo
 
-9. Use the following command to process: `python3 app.py`
+9. Run the application: `python3 app.py`
 
 10. The results will be returned to you in the `output` directory of this repo as `.pdf` files
 
@@ -46,10 +46,12 @@ Below are instructions for installing and running this application on a Linux ma
 
 This project repo is intended to demonstrate an ability to do the following:
 
-- Convert every `.txt` file in an input folder into a corresponding `.pdf` file in the `output` folder
+- Convert every `.txt` file in the `input` directory into a PDF in the `output` directory using `ReportLab`
 
-- Create the `output` directory if it does not already exist
+- Wrap lines to fit inside page margins and preserve leading indentation as a hanging indent
 
-- Log each major step of the conversion process, including successful conversions and errors
+- Log each stage of the conversion to both the console and a `conversion.log` file
+
+- Finish with a summary of how many files were converted or failed during the process
 
 If you have any questions or would like to collaborate, please reach out either on GitHub or via [my website](https://bretbernhoft.com/).
