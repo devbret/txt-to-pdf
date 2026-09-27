@@ -1,14 +1,17 @@
 import logging
+import unicodedata
 from pathlib import Path
 
 from reportlab.lib.pagesizes import LETTER
 from reportlab.lib.utils import simpleSplit
-from reportlab.pdfbase.pdfmetrics import stringWidth
+from reportlab.pdfbase.pdfmetrics import getFont, registerFont, stringWidth
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
 INPUT_DIR = Path("input")
 OUTPUT_DIR = Path("output")
-FONT_NAME = "Helvetica"
+FONT_NAME = "DejaVuSans"
+FONT_FILE = Path(__file__).resolve().parent / "fonts" / "DejaVuSans.ttf"
 FONT_SIZE = 12
 LINE_HEIGHT = 15
 MARGIN = 72
@@ -29,7 +32,8 @@ def break_long_word(word, max_width):
 
 
 def wrap_line(line):
-    line = line.rstrip().expandtabs()
+    line = line.expandtabs()
+    line = "".join(ch for ch in line if unicodedata.category(ch) != "Cc").rstrip()
     stripped = line.lstrip(" ")
     if not stripped:
         return 0, [""]
@@ -51,21 +55,28 @@ def convert_txt_to_pdf(txt_path, pdf_path):
     with open(txt_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
-    c = canvas.Canvas(str(pdf_path), pagesize=LETTER)
-    c.setFont(FONT_NAME, FONT_SIZE)
+    c = canvas.Canvas(
+        str(pdf_path),
+        pagesize=LETTER,
+        initialFontName=FONT_NAME,
+        initialFontSize=FONT_SIZE,
+    )
     y_position = PAGE_HEIGHT - MARGIN
+    char_to_glyph = getFont(FONT_NAME).face.charToGlyph
+    missing = set()
 
     for line in lines:
         indent_width, fragments = wrap_line(line)
         for fragment in fragments:
+            missing.update(ch for ch in fragment if ord(ch) not in char_to_glyph)
             if y_position < MARGIN:
                 c.showPage()
-                c.setFont(FONT_NAME, FONT_SIZE)
                 y_position = PAGE_HEIGHT - MARGIN
             c.drawString(MARGIN + indent_width, y_position, fragment)
             y_position -= LINE_HEIGHT
 
     c.save()
+    return sorted(missing)
 
 
 def main():
@@ -77,6 +88,12 @@ def main():
             logging.StreamHandler()
         ]
     )
+
+    try:
+        registerFont(TTFont(FONT_NAME, str(FONT_FILE)))
+    except Exception as e:
+        logging.critical(f"Failed to load font {FONT_FILE}: {e}")
+        return 1
 
     try:
         OUTPUT_DIR.mkdir(exist_ok=True)
@@ -104,12 +121,20 @@ def main():
         pdf_path = OUTPUT_DIR / txt_path.with_suffix(".pdf").name
         logging.info(f"Processing file: {txt_path.name}")
         try:
-            convert_txt_to_pdf(txt_path, pdf_path)
+            missing = convert_txt_to_pdf(txt_path, pdf_path)
         except Exception as e:
             logging.error(f"Failed to convert {txt_path.name}: {e}")
             failed += 1
             continue
-        logging.info(f"Converted: {txt_path.name} → {pdf_path.name}")
+        logging.info(f"Converted: {txt_path.name} -> {pdf_path.name}")
+        if missing:
+            examples = ", ".join(f"U+{ord(ch):04X} {ch}" for ch in missing[:10])
+            if len(missing) > 10:
+                examples += ", ..."
+            logging.warning(
+                f"{txt_path.name}: {len(missing)} character(s) not in {FONT_NAME} "
+                f"were drawn as empty boxes ({examples})"
+            )
         converted += 1
 
     if failed:
